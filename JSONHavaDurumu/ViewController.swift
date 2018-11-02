@@ -11,6 +11,7 @@ import UIKit
 class ViewController: UIViewController {
     @IBOutlet weak var ilText: UITextField!
     @IBOutlet weak var ilLabel: UILabel!
+    var tempArray = [String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,9 +24,12 @@ class ViewController: UIViewController {
                 let Json = JSONDecoder()
                 do {
                     let newJson = try Json.decode(Weather.self, from: data!)
-                    print(newJson.main.temp)
+                    DispatchQueue.main.sync {
+                        self.ilLabel.text = "İstanbul için hava \(newJson.main.temp) derece ve \(newJson.weather[0].description)"
+                    }
+                    
                 } catch {}
-            }.resume()
+                }.resume()
         }
     }
     
@@ -46,15 +50,18 @@ class ViewController: UIViewController {
                             let desc = weather.firstObject as! [String : AnyObject]
                             
                             if let weatherDescription = desc["description"] as? String {
-                                DispatchQueue.main.sync {
-                                    self.ilLabel.text = "\(self.ilText.text!) için hava şu anda \(weatherDescription)"
+                                if let temp = jsonResult["main"] as? NSDictionary {
+                                    if let tempNow = temp["temp"] as? Double {
+                                        var tempp = Int(tempNow.rounded())
+                                        DispatchQueue.main.sync {
+                                            self.ilLabel.text = "\(self.ilText.text!) için hava \(tempp) derece ve \(weatherDescription)"
+                                        }
+
+                                    }
                                 }
                             }
-                            
-                            print(jsonResult)
-                            
-                            
-                        }catch {
+
+                        } catch {
                             
                         }
                     }
@@ -63,7 +70,7 @@ class ViewController: UIViewController {
             }
             task.resume()
         }
-
+        
     }
     
 }
